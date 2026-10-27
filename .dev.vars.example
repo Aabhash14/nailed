@@ -1,0 +1,21 @@
+# Worker local secrets. Copy to .dev.vars (git-ignored). Names only, no values. See engineering/ops/env.md
+NEXTJS_ENV=development
+SUPABASE_SERVICE_ROLE_KEY=
+TURNSTILE_SECRET_KEY=
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+IP_HASH_SALT=
+# Table ordering guest cookie key (dedicated; NOT the IP salt): `openssl rand -base64 32`. Without it /api/table/* is INTERNAL.
+TABLE_COOKIE_KEY=
+# One digit 1..9 (default 1). During a key rotation only, also set the previous key and its (different) id for 12 h:
+TABLE_COOKIE_KEY_ID=
+TABLE_COOKIE_KEY_PREVIOUS=
+TABLE_COOKIE_KEY_PREVIOUS_ID=
+# Only when the client has a verified domain:
+RESEND_API_KEY=
+
+# Staff-login CAPTCHA mode (SEC-004, ops/auth-settings.md). Not a secret. Empty/"false" = the app verifies Turnstile
+# itself. "true" = the Turnstile token is passed to Supabase Auth instead.
+# WARNING: set "true" ONLY AFTER Supabase dashboard > Authentication > Attack Protection > CAPTCHA (Turnstile) is ON
+# for the same Supabase project this points at. Turning one on without the other breaks staff login.
+AUTH_CAPTCHA_ENABLED=

@@ -1,0 +1,80 @@
+# Dependabot version + security updates (T-047, SEC-014). Owner: devops. Runbook: engineering/ops/supply-chain.md
+# GitHub reads this file ONLY from the repository root's .github/ folder (repo not git-initialised yet; see ci.yml).
+# Every Dependabot PR must pass CI (audit, verify, e2e) before merge. Never auto-merge.
+version: 2
+updates:
+  - package-ecosystem: npm # covers pnpm (v7 to v10) via pnpm-lock.yaml
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Asia/Kathmandu
+    open-pull-requests-limit: 5
+    # Keep at least as long as pnpm minimumReleaseAge (1 day, pnpm-workspace.yaml), otherwise the Dependabot
+    # install refuses the too-new version. Security updates ignore cooldown (GitHub docs); if one is newer than
+    # 1 day, wait a day and re-run it (or see supply-chain.md for the one-off exclude).
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+    labels: [dependencies]
+    # Major upgrades of the framework stack are a tech-lead decision (ADR 0001 pins Next 15.5, React 19.1, Zod 3,
+    # Tailwind 4.1, Node 22). Dependabot still opens SECURITY updates for these when an advisory needs a major.
+    ignore:
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: eslint-config-next
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+      - dependency-name: "@types/react"
+        update-types: [version-update:semver-major]
+      - dependency-name: "@types/react-dom"
+        update-types: [version-update:semver-major]
+      - dependency-name: zod
+        update-types: [version-update:semver-major]
+      - dependency-name: tailwindcss
+        update-types: [version-update:semver-major]
+      - dependency-name: "@tailwindcss/postcss"
+        update-types: [version-update:semver-major]
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+    groups:
+      # A dependency joins the first group it matches.
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
+      next-react:
+        patterns: [next, eslint-config-next, react, react-dom, "@types/react", "@types/react-dom"]
+      cloudflare-opennext:
+        patterns: ["@opennextjs/*", wrangler]
+      supabase:
+        patterns: ["@supabase/*"]
+      prod-minor-patch:
+        dependency-type: production
+        update-types: [minor, patch]
+      dev-minor-patch:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: / # scans /.github/workflows; updates the pinned SHAs and the "# vX.Y.Z" comments
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Asia/Kathmandu
+    open-pull-requests-limit: 3
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "ci"
+    labels: [dependencies, ci]
+    groups:
+      actions:
+        patterns: ["*"]

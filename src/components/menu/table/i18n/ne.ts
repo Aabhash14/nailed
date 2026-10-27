@@ -1,0 +1,42 @@
+// DRAFT by frontend-engineer, 2026-10-25: NOT reviewed by the translator. Short labels only; every key left out
+// (all full sentences, the "Order summary, not a bill or tax invoice" label and every CONTRACT message) falls back to
+// English only, by the menu display rule. translator: review these and add the missing keys (see the report list).
+import type { TableUiPack } from "./en";
+
+export const TABLE_NE: TableUiPack = {
+  "occupancy.title": "अहिलेका टेबलहरू",
+  "occupancy.summary": "{total} मध्ये {free} टेबल खाली",
+  "occupancy.free": "खाली",
+  "occupancy.busy": "भरिएको",
+  "occupancy.yours": "तपाईंको टेबल",
+  "occupancy.table": "टेबल {n}",
+  "join.cta_title": "आफ्नो टेबलबाट अर्डर गर्नुहोस्",
+  "join.open": "टेबल कोड हाल्नुहोस्",
+  "join.title": "आफ्नो टेबलमा जोडिनुहोस्",
+  "join.table_label": "टेबल नम्बर",
+  "join.code_label": "टेबल कोड",
+  "join.submit": "टेबलमा जोडिनुहोस्",
+  "add.button": "थप्नुहोस्",
+  "add.in_cart": "कार्टमा {n}",
+  "item.title": "विकल्प छान्नुहोस्",
+  "item.regular": "सामान्य",
+  "item.qty": "संख्या",
+  "item.add": "कार्टमा थप्नुहोस्",
+  "kind.size": "साइज",
+  "kind.milk": "दूध",
+  "kind.temperature": "तापक्रम",
+  "bar.table": "टेबल {n}",
+  "sheet.title": "टेबल {n}",
+  "sheet.close": "बन्द गर्नुहोस्",
+  "cart.heading": "तपाईंको कार्ट",
+  "cart.remove": "हटाउनुहोस्",
+  "cart.note_label": "भान्साका लागि नोट",
+  "cart.send": "भान्सामा पठाउनुहोस्",
+  "cart.send_again": "फेरि पठाउनुहोस्",
+  "rounds.heading": "भान्सामा पठाइएको",
+  "status.new": "पर्खँदै",
+  "status.preparing": "तयार हुँदैछ",
+  "status.cancelled": "रद्द",
+  "summary.subtotal": "उप-जम्मा",
+  "summary.total": "जम्मा",
+};

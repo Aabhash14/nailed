@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@import "../theme/theme.css";
+
+@layer base {
+  html {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    /* No global smooth scrolling: it would also animate scrollIntoView for assistive tech and test drivers. */
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 45%, transparent);
+    color: var(--color-ink);
+  }
+  /* Devanagari needs a little more line height than Latin for its matras. */
+  :lang(ne) {
+    font-family: var(--font-deva);
+    line-height: 1.45;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  /* Collapsible sections (<details>): our own chevron instead of the browser's marker; it turns when open. */
+  summary {
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary .details-chevron {
+    transition: transform var(--motion-fast);
+  }
+  details[open] > summary .details-chevron {
+    transform: rotate(90deg);
+  }
+  p {
+    text-wrap: pretty;
+  }
+  /* One visible focus ring everywhere. Dark containers swap --focus-color (theme.css surface-inverse / -feature). */
+  :focus-visible {
+    outline: var(--focus-width) solid var(--focus-color);
+    outline-offset: var(--focus-offset);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+/*
+  Secondary menu languages (Chinese, Japanese, Korean). The app ships NO CJK web font (multi-MB files): these runs use
+  the phone's system font, and their lang="" (zh-Hans / ja / ko) makes the browser pick the right Han glyph forms.
+  Always the sans stack, even inside a Marcellus heading, whose fallback chain would otherwise end in a serif (Mincho /
+  Song) face. Deliberately outside @layer, so it wins over a font-display utility on a parent or on the run itself.
+*/
+:lang(zh),
+:lang(ja),
+:lang(ko) {
+  font-family: var(--font-sans);
+  letter-spacing: normal;
+}

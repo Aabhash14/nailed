@@ -1,0 +1,37 @@
+{
+  // CONFIG ONLY. Nothing is deployed from this file until Aabhash approves (deploy/spend gate).
+  // Placeholders: every "REPLACE_WITH_..." value is NOT a real id. Real ids are created with the Cloudflare account
+  // (account gate) by the deploy runbook (ops/deploy.md section 1) and pasted in then. Never invent one.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cafe-app-staging",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "observability": { "enabled": true },
+  "kv_namespaces": [
+    // ISR incremental cache. The id is filled in when the namespace is created (needs the Cloudflare account).
+    { "binding": "NEXT_INC_CACHE_KV", "id": "REPLACE_WITH_STAGING_KV_NAMESPACE_ID" },
+    // TODO(devops, at account setup): OpenNext tag cache for revalidateTag (open-next.config.ts, ADR 0001).
+    // Uncomment after `wrangler kv namespace create NEXT_TAG_CACHE_KV` and paste the STAGING id.
+    // { "binding": "NEXT_TAG_CACHE_KV", "id": "REPLACE_WITH_STAGING_TAG_CACHE_KV_NAMESPACE_ID" },
+  ],
+  // TODO(devops, at account setup): ISR memory queue (open-next.config.ts `queue`, ADR 0001 F2). Service binding to
+  // THIS Worker. Not an id; the value is the staging Worker name. Uncomment together with the first staging deploy.
+  // "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "cafe-app-staging" }],
+  "vars": { "APP_ENV": "staging" },
+  "env": {
+    "production": {
+      // kv_namespaces, services and vars are NOT inherited by environments: everything is repeated here.
+      "name": "cafe-app",
+      "kv_namespaces": [
+        { "binding": "NEXT_INC_CACHE_KV", "id": "REPLACE_WITH_PROD_KV_NAMESPACE_ID" },
+        // TODO(devops, at account setup): uncomment with the PRODUCTION tag-cache namespace id (never the staging one).
+        // { "binding": "NEXT_TAG_CACHE_KV", "id": "REPLACE_WITH_PROD_TAG_CACHE_KV_NAMESPACE_ID" },
+      ],
+      // TODO(devops, at account setup): must point at the production Worker "cafe-app", never "cafe-app-staging".
+      // "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "cafe-app" }],
+      "vars": { "APP_ENV": "production" },
+    },
+  },
+}

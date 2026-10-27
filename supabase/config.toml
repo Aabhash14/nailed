@@ -1,0 +1,44 @@
+# Supabase CLI config for the LOCAL stack only (supabase start). Hand-written because the CLI was not
+# available when this was authored; run `supabase init` in a scratch folder and diff if you want the full
+# commented template. Missing keys fall back to CLI defaults.
+# Nothing here points at a hosted project. Do not add project refs, keys or URLs.
+
+project_id = "nailed-cafe"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15   # match the Postgres version shown in the hosted project's Settings > Infrastructure
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+file_size_limit = "1MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+enable_signup = false              # staff accounts are created by the owner through the backend
+
+[auth.email]
+# Must stay true: in the Supabase CLI this flag enables the whole email/password provider, not just sign-ups.
+# Setting it false disables password login ("Email logins are disabled"). Sign-ups are already off via [auth] above.
+enable_signup = true
+enable_confirmations = false
+
+[studio]
+enabled = true
+port = 54323

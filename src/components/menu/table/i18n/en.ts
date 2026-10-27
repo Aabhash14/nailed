@@ -1,0 +1,87 @@
+// Owner: frontend-engineer (copy: content-writer / translator to review). English source for the table-ordering UI on
+// /menu (api-contract 2.0.0 section 9). Not generated: the translator copy file (design/copy/menu-translations-*.json)
+// has no "table" section yet. Placeholder tokens ({n}, {free}, {total}, {r}, {pct}, {name}) are filled by code.
+// Messages marked CONTRACT are worded in api-contract 9.9 / 9.12 or the security review: keep them exactly.
+
+export const TABLE_EN = {
+  "occupancy.title": "Tables right now",
+  "occupancy.summary": "{free} of {total} tables free",
+  "occupancy.free": "Free",
+  "occupancy.busy": "Busy",
+  "occupancy.yours": "Your table",
+  "occupancy.table": "Table {n}",
+  "join.cta_title": "Order from your table",
+  "join.cta_body": "Ask our staff to open your table. They will give you a 6-character code.",
+  "join.open": "Enter table code",
+  "join.title": "Join your table",
+  "join.table_label": "Table number",
+  "join.code_label": "Table code",
+  "join.code_hint": "6 letters and numbers from our staff, like K7M 4QX.",
+  "join.code_invalid": "Codes are 6 letters and numbers, like K7M 4QX.",
+  "join.submit": "Join table",
+  "join.busy": "Joining...",
+  "join.free_note": "This table is not open yet. Ask our staff to open it and give you a code.",
+  "join.joined": "You joined table {n}. Add items, then send them to the kitchen.",
+  "add.button": "Add",
+  "add.in_cart": "{n} in cart",
+  "add.added": "Added: {name}.",
+  "item.title": "Choose options",
+  "item.regular": "Regular",
+  "item.none": "None",
+  "item.qty": "Quantity",
+  "item.add": "Add to cart",
+  "kind.size": "Size",
+  "kind.milk": "Milk",
+  "kind.addon": "Add-on",
+  "kind.temperature": "Temperature",
+  "bar.table": "Table {n}",
+  "bar.view": "Cart and orders",
+  "sheet.title": "Table {n}",
+  "sheet.close": "Close",
+  "cart.heading": "Your cart",
+  "cart.empty": "Your cart is empty. Tap Add next to an item on the menu.",
+  "cart.less": "One less",
+  "cart.more": "One more",
+  "cart.remove": "Remove",
+  "cart.note_label": "Note for the kitchen",
+  "cart.note_hint": "Like \"less sugar\". Please don't write names or phone numbers.",
+  "cart.estimate": "About {total}. The kitchen uses today's prices.",
+  "cart.send": "Send to kitchen",
+  "cart.sending": "Sending...",
+  "cart.send_again": "Send again",
+  "cart.sent": "Round {r} sent. Our staff will bring it to your table.",
+  "cart.line_sold_out": "Sold out now. Remove it to send your order.",
+  "cart.line_gone": "No longer on the menu. Remove it to send your order.",
+  "cart.too_many": "Up to 20 different items per order.",
+  "rounds.heading": "Sent to the kitchen",
+  "rounds.empty": "Nothing sent yet.",
+  "rounds.round": "Round {r}",
+  "status.new": "Waiting",
+  "status.preparing": "Being prepared",
+  "status.served": "Served",
+  "status.cancelled": "Cancelled",
+  // CONTRACT (pricing section 10 / ADR 0002 R8; legal words it)
+  "summary.title": "Order summary, not a bill or tax invoice",
+  "summary.subtotal": "Subtotal",
+  "summary.service": "Service charge ({pct}%)",
+  "summary.vat_included": "Includes VAT ({pct}%)",
+  "summary.vat_added": "VAT ({pct}%)",
+  "summary.total": "Total",
+  "summary.pay": "Pay at the counter, in cash or with our Fonepay QR.",
+  // CONTRACT 9.12
+  "msg.unavailable": "Ordering is not available right now. Please order with our staff.",
+  // CONTRACT 9.9 TABLE_ORDERS_PAUSED
+  "msg.paused": "The kitchen is not taking orders from the app right now. Please order with our staff.",
+  // CONTRACT 9.9 (2.1.0): TABLE_ORDERS_PAUSED for one stopped table (ordering: "stopped")
+  "msg.locked": "Ordering from the app is stopped for this table. Please order with our staff.",
+  // CONTRACT 9.9 TABLE_SESSION_INVALID
+  "msg.session_invalid": "Your table is not open for ordering. Enter the code from our staff to order.",
+  "msg.closed": "Table {n} is closed. Thank you for visiting!",
+  "msg.off": "Table ordering is off right now. Please order with our staff.",
+  "msg.checking": "Checking your table...",
+  "msg.poll_failed": "We could not check your orders just now. We will try again.",
+} as const;
+
+export type TableUiKey = keyof typeof TABLE_EN;
+/** A secondary pack: any key may be missing (= English only, the menu's display rule). */
+export type TableUiPack = Partial<Record<TableUiKey, string>>;

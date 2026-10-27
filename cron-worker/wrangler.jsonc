@@ -1,0 +1,11 @@
+{
+  // CONFIG ONLY, not deployed. Cron Trigger every 5 minutes calls GET /api/health: keep-alive, and it drives the
+  // staff digest (SEC-019: auto-cancelled orders and held-back alerts reach Telegram within about 10 minutes).
+  // Minutes 2, 7, 12, ... (not 0, 5, ...) so each call lands well inside the app's 5-minute digest window even with
+  // a little clock skew between Cloudflare and the database. 288 calls a day (Workers Free: 100,000 requests a day).
+  "name": "cafe-cron",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-01",
+  "triggers": { "crons": ["2,7,12,17,22,27,32,37,42,47,52,57 * * * *"] },
+  "vars": { "HEALTH_URL": "https://REPLACE-WITH-APP-URL/api/health" },
+}

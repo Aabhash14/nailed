@@ -1,0 +1,492 @@
+/*
+  THE ONE THEME FILE. Swap this file (plus src/theme/fonts.ts) when the visual direction changes. Nothing else.
+
+  Direction: PLACEHOLDER concept C "Mato & Dhaka" with concept A's calm (design/ui/concepts/README.md, the designer's
+  recommendation). NOT client-approved. Raw values come from concept-c-mato-dhaka.html.
+
+  Layers:
+    1. Raw palette (:root, concept C names). Only this file uses them.
+    2. Semantic tokens (@theme): what components use. bg-surface, text-ink, bg-primary, border-line, font-display,
+       text-title-1, p-section, max-w-page, rounded-card, shadow-card, ease-soft, animate-rise ...
+    3. Direction utilities (@utility): the ornament and state treatments that differ per direction (ornament-band,
+       ornament-rule, frame-window, photo-placeholder, hatch-soldout, stamp, seal, leader, surface-paper ...).
+       A new direction redefines these names; components keep calling them.
+
+  Contrast (text on its usual ground, WCAG 2.x):
+    ink on surface 14:1 · ink-muted on surface 5.4:1, on surface-alt 4.7:1, on surface-raised 6.1:1
+    primary on surface 6.2:1, on surface-alt 5.4:1 · danger on surface 6.7:1 · success on surface 8.4:1
+    on-inverse on inverse 15:1 · on-inverse-muted on inverse 9.4:1 · accent on inverse 6.5:1
+    on-feature on feature 8.4:1 · on-feature-muted on feature 5.7:1 · accent on feature 3.9:1 (24 px+ only)
+  Accent (marigold) is never text on a light ground: it is ornament, or a fill with ink on top (6.5:1).
+  Light only: concept C defines no dark theme.
+*/
+
+:root {
+  /* 1. Raw palette (concept C) */
+  --lokta: #f1e8d6; /* handmade-paper background */
+  --lokta-2: #e6d9bf; /* bands, tab bar */
+  --lokta-3: #fbf6ea; /* raised cards, inputs */
+  --lokta-dim: #cdbfa8; /* muted text on dark grounds */
+  --itta: #8e3a22; /* Newari brick: primary */
+  --itta-dk: #6e2b18; /* pressed, deep frame */
+  --kaalo: #231b16; /* soot: text, footer */
+  --kaalo-2: #3c3129; /* hairlines on soot */
+  --dhunga: #6a5a4a; /* stone: secondary text */
+  --sayapatri: #d8921c; /* marigold: ornament */
+  --devdar: #2e4636; /* deodar green: veg mark, feature sections */
+  --rekha: #cdbd9e; /* hairline */
+  --raato: #9b1c1c; /* error red */
+  /* Outlined dhaka diamond, used as a mask by photo-placeholder (painted in currentColor) */
+  --placeholder-mark: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><path d='M48 6 90 48 48 90 6 48z' fill='none' stroke='black' stroke-width='3'/><path d='M48 30 66 48 48 66 30 48z' fill='none' stroke='black' stroke-width='3'/></svg>");
+
+  /* Motion. Used as duration-(--motion-base) etc. The global reduced-motion rule (globals.css) switches all of it off. */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 520ms;
+  --motion-stagger: 70ms;
+
+  /* Focus ring. Containers on a dark ground override --focus-color (see surface-inverse / surface-feature). */
+  --focus-color: var(--itta);
+  --focus-width: 2px;
+  --focus-offset: 3px;
+
+  /* Dhaka band artwork (original geometric, inspired by dhaka weave) */
+  --dhaka-band: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='24'><rect width='48' height='24' fill='%23231B16'/><path d='M12 0L24 12 12 24 0 12z' fill='%238E3A22'/><path d='M12 5l7 7-7 7-7-7z' fill='%23D8921C'/><path d='M12 9.5l2.5 2.5-2.5 2.5-2.5-2.5z' fill='%23231B16'/><path d='M30 0l6 6 6-6zM30 24l6-6 6 6z' fill='%23F1E8D6'/><path d='M36 9l3 3-3 3-3-3z' fill='%23F1E8D6'/></svg>");
+}
+
+/* 2. Semantic tokens */
+@theme inline {
+  /* Colour roles */
+  --color-surface: var(--lokta);
+  --color-surface-alt: var(--lokta-2);
+  --color-surface-raised: var(--lokta-3);
+  --color-surface-inverse: var(--kaalo);
+  --color-on-inverse: var(--lokta);
+  --color-on-inverse-muted: var(--lokta-dim);
+  --color-line-inverse: var(--kaalo-2);
+  --color-surface-feature: var(--devdar);
+  --color-on-feature: var(--lokta);
+  --color-on-feature-muted: var(--lokta-2);
+  --color-ink: var(--kaalo);
+  --color-ink-muted: var(--dhunga);
+  --color-line: var(--rekha);
+  --color-line-strong: var(--dhunga);
+  --color-primary: var(--itta);
+  --color-primary-strong: var(--itta-dk);
+  --color-on-primary: var(--lokta);
+  --color-accent: var(--sayapatri);
+  --color-on-accent: var(--kaalo);
+  --color-success: var(--devdar);
+  --color-on-success: var(--lokta);
+  --color-danger: var(--raato);
+  --color-on-danger: var(--lokta);
+  --color-veg: var(--devdar);
+  --color-non-veg: var(--itta);
+  --color-egg: var(--dhunga);
+
+  /* Type: display (Latin headings, labels), sans (body, Latin + Devanagari), deva (Devanagari accents).
+     The next/font variables come from src/theme/fonts.ts; the named families after them are for unit tests/storybooks
+     without next/font, then system fallbacks that cover Devanagari on Android, iOS and Windows. */
+  --font-display: var(--nf-display), var(--nf-deva), Marcellus, "Trajan Pro", Georgia, serif;
+  --font-sans: var(--nf-sans), var(--nf-deva), Mukta, system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Nirmala UI", sans-serif;
+  --font-deva: var(--nf-deva), Mukta, "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", sans-serif;
+
+  /* Type scale (fluid between 360 px and 1280 px). Use with the matching font family. */
+  --text-display: clamp(2.5rem, 1.5rem + 4.4vw, 4.5rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: 0.005em;
+  --text-title-1: clamp(2.25rem, 1.75rem + 2.2vw, 3.5rem);
+  --text-title-1--line-height: 1.08;
+  --text-title-2: clamp(1.75rem, 1.45rem + 1.4vw, 2.625rem);
+  --text-title-2--line-height: 1.12;
+  --text-title-3: clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem);
+  --text-title-3--line-height: 1.25;
+  --text-lead: clamp(1.125rem, 1.07rem + 0.25vw, 1.25rem);
+  --text-lead--line-height: 1.55;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.6;
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.16em;
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.2;
+  --text-eyebrow--letter-spacing: 0.2em;
+  --text-deva-accent: clamp(1.25rem, 1.1rem + 0.6vw, 1.625rem);
+  --text-deva-accent--line-height: 1.3;
+
+  --tracking-label: 0.16em;
+  --tracking-wordmark: 0.32em;
+
+  /* Spacing rhythm (Tailwind's 4 px scale stays for small gaps).
+     2026-10-25 density pass (design/ui/spacing-fix-2026-10-25.md): about 30% less dead space, same calm proportions.
+     Values at 390 / 820 / 1280 px are in the comments. */
+  --spacing-tap: 2.75rem; /* 44 px minimum tap target */
+  --spacing-tab: 3rem; /* menu category tabs */
+  --spacing-gutter: clamp(1rem, 0.5rem + 2vw, 2.5rem); /* page side padding: 16 / 24 / 34 (40 max) */
+  --spacing-section: clamp(2.5rem, 1.75rem + 3.5vw, 4.75rem); /* between big page sections: 42 / 57 / 73 (76 max) */
+  --spacing-section-sm: clamp(1.75rem, 1.25rem + 2vw, 2.75rem); /* page top/bottom padding, small sections: 28 / 36 / 44 */
+  --spacing-stack: clamp(1.5rem, 1.125rem + 1.5vw, 2.25rem); /* section heading to its content, between blocks: 24 / 30 / 36 */
+
+  /* Widths */
+  --container-page: 76rem;
+  --container-reading: 42rem;
+  --container-narrow: 34rem;
+
+  /* Radii: concept C is crisp, almost square */
+  --radius-control: 2px;
+  --radius-card: 4px;
+  --radius-pill: 9999px;
+
+  /* Elevation (warm soot shadows, never grey) */
+  --shadow-hairline: 0 1px 0 color-mix(in srgb, var(--rekha) 80%, transparent);
+  --shadow-card: 0 1px 0 color-mix(in srgb, var(--rekha) 70%, transparent), 0 14px 28px -22px color-mix(in srgb, var(--kaalo) 45%, transparent);
+  --shadow-lift: 0 2px 0 color-mix(in srgb, var(--rekha) 70%, transparent), 0 26px 48px -26px color-mix(in srgb, var(--kaalo) 55%, transparent);
+  --shadow-tabbar: 0 1px 0 var(--rekha), 0 8px 16px -12px color-mix(in srgb, var(--kaalo) 45%, transparent);
+  --shadow-frame: 0 30px 50px -24px color-mix(in srgb, var(--kaalo) 50%, transparent);
+
+  /* Motion easing */
+  --ease-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --animate-rise: rise var(--motion-slow) var(--ease-soft) both;
+  --animate-fade: fade var(--motion-slow) var(--ease-standard) both;
+  --animate-live: live-pulse 2.4s var(--ease-standard) infinite;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+}
+
+/* Keyframes live outside @theme so they are always emitted (rise-stagger uses `rise` directly). */
+/* rise starts at 0.01, not 0: an element at opacity 0 is not counted for Largest Contentful Paint until it shows. */
+@keyframes rise {
+  from {
+    opacity: 0.01;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--devdar) 50%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--devdar) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--devdar) 0%, transparent);
+  }
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* 3. Direction utilities (concept C). Redefine these per direction; components only call the names. */
+
+/* Lokta paper: a faint fibre texture over the page colour. Public pages only (admin stays plain). */
+@utility surface-paper {
+  background-color: var(--lokta);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.014 .22' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 .42 0 0 0 0 .30 0 0 0 0 .16 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+  @media (prefers-reduced-data: reduce) {
+    background-image: none;
+  }
+}
+
+/* Dark grounds: set the colours AND move the focus ring to marigold so it stays visible (6.5:1 on soot). */
+@utility surface-inverse {
+  background-color: var(--kaalo);
+  color: var(--lokta);
+  --focus-color: var(--sayapatri);
+}
+@utility surface-feature {
+  background-color: var(--devdar);
+  color: var(--lokta);
+  --focus-color: var(--lokta);
+}
+
+/* Dhaka band: edges and dividers only, never a full background. ornament-band = 12 px, -sm = 8 px, -lg = 24 px. */
+@utility ornament-band {
+  height: 12px;
+  background-image: var(--dhaka-band);
+  background-size: 24px 12px;
+  background-repeat: repeat-x;
+}
+@utility ornament-band-sm {
+  height: 8px;
+  background-image: var(--dhaka-band);
+  background-size: 16px 8px;
+  background-repeat: repeat-x;
+}
+@utility ornament-band-lg {
+  height: 24px;
+  background-image: var(--dhaka-band);
+  background-size: 48px 24px;
+  background-repeat: repeat-x;
+}
+
+/* Centred rule: hairline, a brick diamond flanked by two marigold ones, hairline. Colour = currentColor. */
+@utility ornament-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  color: var(--itta);
+  &::before,
+  &::after {
+    content: "";
+    height: 1px;
+    width: 3.5rem;
+    background: currentColor;
+  }
+  & > i {
+    display: block;
+    width: 8px;
+    height: 8px;
+    background: currentColor;
+    transform: rotate(45deg);
+    box-shadow:
+      14px -14px 0 -2px var(--sayapatri),
+      -14px 14px 0 -2px var(--sayapatri);
+  }
+}
+
+/* Small diamond bullet (eyebrows, list markers). */
+@utility ornament-diamond {
+  display: inline-block;
+  flex: none;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+/* Section numeral in a diamond (menu categories, story chapters). Child span counter-rotates. */
+@utility numeral-diamond {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.875rem;
+  height: 1.875rem;
+  border: 1px solid var(--itta);
+  color: var(--itta);
+  transform: rotate(45deg);
+  & > span {
+    transform: rotate(-45deg);
+    line-height: 1;
+  }
+}
+
+/* Tikijhyal lattice (carved window). Frames photos; never behind text. */
+@utility lattice {
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 9px, var(--itta) 9px 11px),
+    repeating-linear-gradient(-45deg, transparent 0 9px, var(--itta) 9px 11px),
+    linear-gradient(180deg, color-mix(in srgb, var(--sayapatri) 40%, var(--lokta)), color-mix(in srgb, var(--sayapatri) 70%, var(--itta)));
+}
+
+/* Carved Newari window around the hero photo: brick frame, inner paper rule, lintel and sill wider than the frame. */
+@utility frame-window {
+  position: relative;
+  border: 12px solid var(--itta);
+  box-shadow:
+    inset 0 0 0 3px var(--lokta-2),
+    inset 0 0 0 6px var(--itta-dk),
+    0 0 0 3px var(--lokta-2),
+    0 0 0 7px var(--itta-dk),
+    0 30px 50px -24px color-mix(in srgb, var(--kaalo) 50%, transparent);
+  margin-block: 18px;
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    left: -30px;
+    right: -30px;
+    height: 16px;
+    background: linear-gradient(180deg, var(--itta), var(--itta-dk));
+    z-index: 1;
+    pointer-events: none;
+  }
+  &::before {
+    top: -30px;
+    background: repeating-linear-gradient(90deg, var(--itta-dk) 0 10px, var(--itta) 10px 12px);
+  }
+  &::after {
+    bottom: -30px;
+  }
+  /* R24-5: slimmer on phones (6 px border, one thin ring), so it reads as a window, not a wall. The lintel and sill end
+     flush with the outer ring (4 px past the border), so a px-2 wrapper holds them. */
+  @media (max-width: 47.99rem) {
+    border-width: 6px;
+    margin-block: 14px;
+    box-shadow:
+      0 0 0 2px var(--lokta-2),
+      0 0 0 4px var(--itta-dk),
+      0 18px 32px -20px color-mix(in srgb, var(--kaalo) 45%, transparent);
+    &::before,
+    &::after {
+      left: -10px;
+      right: -10px;
+      height: 10px;
+    }
+    &::before {
+      top: -16px;
+      background: repeating-linear-gradient(90deg, var(--itta-dk) 0 8px, var(--itta) 8px 10px);
+    }
+    &::after {
+      bottom: -16px;
+    }
+  }
+}
+
+/* Photo placeholder (R24-1): a light tile in the text colour, so it works on paper AND on the green feature ground,
+   and recedes behind the real content until photos exist. Always paired with a visible text caption in markup; the
+   caption sits above the mark (give it `relative`). */
+@utility photo-placeholder {
+  position: relative;
+  overflow: hidden;
+  background-color: color-mix(in srgb, currentColor 5%, transparent);
+  outline: 1px dashed color-mix(in srgb, currentColor 35%, transparent);
+  outline-offset: -1px;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: currentColor;
+    opacity: 0.12;
+    -webkit-mask: var(--placeholder-mark) center / min(30%, 120px) auto no-repeat;
+    mask: var(--placeholder-mark) center / min(30%, 120px) auto no-repeat;
+    pointer-events: none;
+  }
+}
+
+/* Quiet product ground for flat-lay shots (and their placeholders when used inside a card). */
+@utility photo-ground {
+  background-color: var(--lokta-2);
+}
+
+/* Sold out: a faint hatch so the state is never colour alone (always with a text label too). */
+@utility hatch-soldout {
+  background-image: repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in srgb, var(--itta) 7%, transparent) 6px 12px);
+}
+
+/* Rubber-stamp label ("Sold out"). Text label, slight tilt, brick ink. */
+@utility stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border: 2px solid var(--itta);
+  border-radius: 3px;
+  color: var(--itta);
+  background: color-mix(in srgb, var(--lokta) 75%, transparent);
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+}
+
+/* Round brick seal (the QR table number). */
+@utility seal {
+  display: inline-grid;
+  place-items: center;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-pill);
+  background: var(--itta);
+  color: var(--lokta);
+  box-shadow:
+    inset 0 0 0 3px var(--itta),
+    inset 0 0 0 4px color-mix(in srgb, var(--lokta) 60%, transparent);
+  text-align: center;
+  line-height: 1.05;
+}
+
+/* Prices: bold, brick and in the body face (Mukta 600), never the display face, whose zeros read as "O".
+   Brick on paper/surface-alt/raised is 6.2 / 5.4 / 7.0:1 (AA). A struck sold-out price overrides the colour. */
+@utility price {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--color-primary);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* Dotted leader between a menu item's name and its price (ledger rows). */
+@utility leader {
+  flex: 1 1 1.5rem;
+  min-width: 1.5rem;
+  align-self: end;
+  margin-bottom: 0.4em;
+  border-bottom: 1.5px dotted color-mix(in srgb, var(--kaalo) 35%, transparent);
+}
+
+/* Primary button inner rule (the concept's double-line button): a 1 px paper line 3 px inside the edge. */
+@utility button-rule {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px solid color-mix(in srgb, var(--lokta) 50%, transparent);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+}
+
+/* Loading shimmer in paper tones. Static under reduced motion. */
+@utility skeleton-shimmer {
+  background-image: linear-gradient(90deg, var(--lokta-2) 0%, var(--lokta-3) 50%, var(--lokta-2) 100%);
+  background-size: 200% 100%;
+}
+
+/* Animated underline for text links (grows from the left). On the link itself or on a span inside a link. */
+@utility link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size var(--motion-base) var(--ease-soft);
+  &:hover,
+  &[aria-current="page"],
+  :is(a, button):hover > &,
+  :is(a, button):focus-visible > &,
+  a[aria-current="page"] > & {
+    background-size: 100% 1px;
+  }
+}
+
+/* Entrance stagger helper: children of .rise-stagger rise one after another (once, on load). */
+@utility rise-stagger {
+  & > * {
+    animation: rise var(--motion-slow) var(--ease-soft) both;
+  }
+  & > :nth-child(2) {
+    animation-delay: calc(var(--motion-stagger) * 1);
+  }
+  & > :nth-child(3) {
+    animation-delay: calc(var(--motion-stagger) * 2);
+  }
+  & > :nth-child(4) {
+    animation-delay: calc(var(--motion-stagger) * 3);
+  }
+  & > :nth-child(5) {
+    animation-delay: calc(var(--motion-stagger) * 4);
+  }
+  & > :nth-child(n + 6) {
+    animation-delay: calc(var(--motion-stagger) * 5);
+  }
+}

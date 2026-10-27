@@ -1,0 +1,117 @@
+name: CI
+
+# REPO ROOT (open, Aabhash to decide): the project is NOT a git repository yet. GitHub reads workflows (and
+# .github/dependabot.yml) ONLY from the repository root's .github/ folder. If the repo root is engineering/app/
+# (recommended, see README and ops/deploy.md) these files work as they are. If the root is higher up, move .github/ to
+# that root and add `defaults: run: working-directory: <path to app>` plus Dependabot `directory:` paths.
+#
+# CI deploys nothing and needs no secrets. Build steps use MOCK data mode (sample data, no database) because there
+# are no staging values yet.
+#
+# !! ALLOW_MOCK_BUILD / NEXT_PUBLIC_DATA_MODE=mock must NEVER be set on any deploy job or deploy workflow
+# !! (deploy.yml, staging or production), nor as a repository/environment variable. A mock build ships sample
+# !! data and a fake admin login, and no order reaches the cafe (SEC-011, ADR 0001 R16). Set them per step, only
+# !! in this file, only on build steps that never deploy.
+#
+# Supply chain (T-047, SEC-014): third-party actions are pinned to full commit SHAs, verified against the tags of
+# the official repos on 2026-10-22 (`git ls-remote --tags`, peeled commit for annotated tags). The trailing comment
+# is the release tag. Dependabot (.github/dependabot.yml) proposes SHA bumps weekly. Never replace a SHA by hand
+# with one taken from a fork, a blog post or a PR: only from the action's own repository tags.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly dependency audit even when nobody pushes (new advisories appear on unchanged lockfiles).
+    # Monday 00:30 UTC = 06:15 Nepal time. Only the audit job runs on the schedule.
+    - cron: "30 0 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0 (same commit as v4.4.0)
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      # pnpm audit reads pnpm-lock.yaml and queries the registry; no install needed.
+      # Fails on any high or critical advisory, dev dependencies included. Advisories triaged as not reachable at
+      # runtime are allowlisted by GHSA id in pnpm-workspace.yaml (auditConfig.ignoreGhsas); every entry must have
+      # a row in engineering/ops/supply-chain.md. If the npm registry itself errors, re-run the job; do not add
+      # --ignore-registry-errors (a gate that silently passes is worse than a re-run).
+      - name: pnpm audit (fail on high/critical)
+        run: pnpm audit --audit-level high
+      - name: pnpm audit, all severities (report only, never fails)
+        if: always()
+        continue-on-error: true
+        run: pnpm audit
+
+  verify:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0 (same commit as v4.4.0)
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      # `opennextjs-cloudflare build` runs `next build` itself (standalone mode), so one step covers both builds.
+      - name: Next build + OpenNext Worker build (Linux, MOCK data mode)
+        run: pnpm cf:build
+        env:
+          # Test-only build: sample data, no Supabase. NEVER copy these two lines into a deploy job (see top of file).
+          NEXT_PUBLIC_DATA_MODE: mock
+          ALLOW_MOCK_BUILD: "1"
+          # Public, non-secret placeholder so the build never needs real keys.
+          NEXT_PUBLIC_SITE_URL: https://example.invalid
+      # Size of the MOCK build (includes sample data). The authoritative check is on the live staging build.
+      - name: Worker size check
+        run: pnpm cf:check
+
+  e2e:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: verify
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0 (same commit as v4.4.0)
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      # No separate build step: playwright.config.ts webServer runs `next build` itself with
+      # NEXT_PUBLIC_DATA_MODE=mock + ALLOW_MOCK_BUILD=1 and then `next start` (test-only, never deployed).
+      - run: pnpm e2e
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

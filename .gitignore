@@ -1,0 +1,24 @@
+node_modules
+.next
+.next-dev
+out
+.open-next
+.wrangler
+coverage
+playwright-report
+test-results
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+
+# secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+*.pem
+
+# supabase CLI scratch
+supabase/.temp

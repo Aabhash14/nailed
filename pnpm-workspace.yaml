@@ -1,0 +1,22 @@
+# pnpm settings for this single-package app (no `packages:` list: this is not a monorepo).
+# Owner: devops. See engineering/ops/supply-chain.md (T-047, SEC-014).
+
+# Supply-chain delay: do not resolve a package version published less than 24 h ago (minutes; pnpm >= 10.16).
+# Most malicious publishes are found and pulled within hours. Applies when pnpm RESOLVES versions
+# (pnpm add / update / install without a lockfile), e.g. Dependabot updates. The CI install uses the committed
+# lockfile (--frozen-lockfile) and is not affected. If an urgent security fix is newer than 24 h, add that
+# package to minimumReleaseAgeExclude for that one update and remove it afterwards (log it in supply-chain.md).
+minimumReleaseAge: 1440
+
+# Audit allowlist (pnpm audit reads this). Only for advisories triaged as NOT reachable at runtime (SEC-014).
+# Every entry needs a row in engineering/ops/supply-chain.md (package, path, why it is safe, review date).
+# Remove an entry as soon as the upstream fix lands (Next, OpenNext or eslint-config-next release).
+auditConfig:
+  ignoreGhsas:
+    # postcss 8.4.31 vendored by next (build-time CSS pipeline, input is our own CSS). Fixed only by a Next release.
+    - GHSA-6g55-p6wh-862q
+    - GHSA-r28c-9q8g-f849
+    # glob 10.3.3 CLI -c injection, via @opennextjs/cloudflare > @opennextjs/aws > @node-minify/core (build tool, CLI not used).
+    - GHSA-5j98-mcp5-4vw2
+    # braces 3.0.3 ReDoS, via eslint-config-next > ... > micromatch (lint-time only; no patched version exists).
+    - GHSA-vfj7-8cjw-p6xm

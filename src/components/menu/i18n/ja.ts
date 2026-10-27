@@ -1,0 +1,51 @@
+// GENERATED from design/copy/menu-translations-2026-10-24.json "ui".ja (owner: translator). Japanese.
+// Concept translation, NOT yet checked by a native speaker (needs review before launch).
+// Placeholder tokens ({n}, {ago}, {vat}, {pct}, {name}, {m}, {h}, {d}) are filled by code; keep them exactly.
+import type { MenuUiPack } from "./types";
+
+export const JA: MenuUiPack = {
+  "menu.title": "メニュー",
+  "table.badge": "{n}番テーブル",
+  "status.saved_copy": "保存済みのメニュー",
+  "status.offline": "オフラインです。前回読み込んだメニューを表示しています。",
+  "status.loading": "状態を読み込み中",
+  "status.live": "ライブ表示中。更新：{ago}",
+  "ago.just_now": "たった今",
+  "ago.minutes": "{m}分前",
+  "ago.hours": "{h}時間前",
+  "ago.days": "{d}日前",
+  "banner.sample.title": "サンプルデータ",
+  "banner.sample.body": "このメニューは開発用の架空データで、実際のメニューや価格ではありません。",
+  "banner.stale.title": "価格が最新でない可能性があります",
+  "banner.stale.body_fallback":
+    "現在、最新のメニューを読み込めません。価格が変わっている可能性があるため、スタッフにお尋ねください。",
+  "banner.stale.body_cached":
+    "最後に保存したメニューを表示しています。価格と提供状況はスタッフにご確認ください。",
+  "banner.notice.title": "お知らせ",
+  "specials.heading": "スペシャル",
+  "empty.setup.title": "メニューを準備中です",
+  "empty.setup.body": "本日のメニューはカウンターでお尋ねください。",
+  "nav.categories_label": "メニューのカテゴリー",
+  "count.item": "{n}品",
+  "count.items": "{n}品",
+  "count.sold_out": "売り切れ{n}品",
+  "filter.veg_only.label": "ベジタリアンのみ",
+  "filter.veg_only.hint": "肉や卵を含むメニューを非表示にします。",
+  "empty.veg.title": "現在ベジタリアンメニューはありません",
+  "empty.veg.body": "フィルターをオフにすると全メニューが表示されます。",
+  "diet.veg": "ベジタリアン",
+  "diet.non_veg": "ノンベジタリアン",
+  "diet.egg": "卵を含む",
+  "tag.spicy": "辛口",
+  "tag.new": "新メニュー",
+  "tag.bestseller": "人気",
+  "tag.chef_pick": "シェフのおすすめ",
+  "item.sold_out": "売り切れ",
+  "item.sold_out_line": "ただいまご用意できません。再開の時期はスタッフにお尋ねください。",
+  "item.price_label": "価格",
+  "variant.options_label": "{name}のオプション",
+  "variant.sold_out_suffix": "（売り切れ）",
+  "footer.vat_included": "価格は{vat}%のVAT（付加価値税）込みです。",
+  "footer.vat_excluded": "価格に{vat}%のVATは含まれていません。お会計時に加算されます。",
+  "footer.service_charge": "{pct}%のサービス料が加算されます。",
+};

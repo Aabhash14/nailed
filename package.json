@@ -51,7 +51,7 @@
     "tailwindcss": "~4.1.18",
     "typescript": "~5.9.3",
     "vitest": "^5.0.5",
-    "wrangler": "^4.151.2"
+    "wrangler": "^4.152.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

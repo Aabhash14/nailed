@@ -11,15 +11,20 @@
   "observability": { "enabled": true },
   "kv_namespaces": [
     // ISR incremental cache. The id is filled in when the namespace is created (needs the Cloudflare account).
-    { "binding": "NEXT_INC_CACHE_KV", "id": "REPLACE_WITH_STAGING_KV_NAMESPACE_ID" },
+    { "binding": "NEXT_INC_CACHE_KV", "id": "63843206a5b246ed9fd35cf784ee7041" },
     // TODO(devops, at account setup): OpenNext tag cache for revalidateTag (open-next.config.ts, ADR 0001).
     // Uncomment after `wrangler kv namespace create NEXT_TAG_CACHE_KV` and paste the STAGING id.
-    // { "binding": "NEXT_TAG_CACHE_KV", "id": "REPLACE_WITH_STAGING_TAG_CACHE_KV_NAMESPACE_ID" },
+    { "binding": "NEXT_TAG_CACHE_KV", "id": "4d1ca9c478404ba18cf7a6a9780ede2f" },
   ],
   // TODO(devops, at account setup): ISR memory queue (open-next.config.ts `queue`, ADR 0001 F2). Service binding to
   // THIS Worker. Not an id; the value is the staging Worker name. Uncomment together with the first staging deploy.
-  // "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "cafe-app-staging" }],
-  "vars": { "APP_ENV": "staging" },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "cafe-app-staging" }],
+  // Table ordering (ops/env.md, ops/table-ordering-runbook.md). Secrets are NOT listed here, they are never in this file:
+  //   TABLE_COOKIE_KEY            (secret) Aabhash creates it per environment: `wrangler secret put TABLE_COOKIE_KEY`
+  //   TABLE_COOKIE_KEY_PREVIOUS   (secret) only during a rotation, deleted 12 h later
+  // The non-secret key ids below are the signing key's id (one digit 1..9). Bump it on every rotation, and set
+  // TABLE_COOKIE_KEY_PREVIOUS_ID (the old id) next to TABLE_COOKIE_KEY_PREVIOUS only while rotating.
+  "vars": { "APP_ENV": "staging", "TABLE_COOKIE_KEY_ID": "1", "AUTH_CAPTCHA_ENABLED": "false" },
   "env": {
     "production": {
       // kv_namespaces, services and vars are NOT inherited by environments: everything is repeated here.
@@ -31,7 +36,13 @@
       ],
       // TODO(devops, at account setup): must point at the production Worker "cafe-app", never "cafe-app-staging".
       // "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "cafe-app" }],
-      "vars": { "APP_ENV": "production" },
+      "vars": { "APP_ENV": "production", "TABLE_COOKIE_KEY_ID": "1" },
+      // SEC threat model O4: production answers only on the custom domain, never on <name>.workers.dev (a second,
+      // unprotected hostname for the same Worker). Staging (top level) keeps workers.dev on purpose: it has no custom
+      // domain. !! This env has no `routes` yet, so after a deploy with this flag the Worker has NO public URL until
+      // the custom domain is attached (ops/deploy.md section 4). Add `routes` / a custom domain in the same approved
+      // change. Never add `workers_dev: true` here.
+      "workers_dev": false,
     },
   },
 }

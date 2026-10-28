@@ -1,0 +1,75 @@
+name: Deploy staging
+
+# STAGING ONLY, manual trigger only (Actions tab, "Run workflow"). Production has no workflow on purpose: its
+# go-live is an approval gate (ops/deploy.md section 3).
+#
+# Needs, in the GitHub repo (Settings, Secrets and variables, Actions), on the "staging" environment:
+#   secrets:   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
+#   variables: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+#              NEXT_PUBLIC_SITE_URL   (all public by design; they are inlined into the browser bundle)
+# Server secrets (service role key, Turnstile secret, IP_HASH_SALT, TABLE_COOKIE_KEY) live on the Worker, set with
+# `wrangler secret put`. They are never in GitHub and never in this file.
+#
+# !! Never set ALLOW_MOCK_BUILD or NEXT_PUBLIC_DATA_MODE here (SEC-011, ADR 0001 R16): a mock build ships sample
+# !! data and a fake admin login. The first step refuses to continue if either is set.
+#
+# Actions are pinned to the same commit SHAs as ci.yml (see the supply-chain note there).
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy cafe-app-staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: staging
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Refuse mock build flags
+        run: |
+          test -z "${ALLOW_MOCK_BUILD:-}" && [ "${NEXT_PUBLIC_DATA_MODE:-live}" = "live" ] || { echo "Refusing: mock build flags set on a deploy"; exit 1; }
+          if grep -Eqs --exclude=.env.example '^(ALLOW_MOCK_BUILD=|NEXT_PUBLIC_DATA_MODE=mock)' .env*; then echo "Refusing: mock flag in an .env file"; exit 1; fi
+      - name: Refuse placeholder ids in wrangler.jsonc (staging block)
+        run: |
+          # Everything above the "env" block is staging. Production placeholders are expected to remain for now.
+          if sed '/"env": {/,$d' wrangler.jsonc | grep -v '^\s*//' | grep -q 'REPLACE_WITH_'; then echo "Refusing: placeholder id left in the staging config"; exit 1; fi
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0 (same commit as v4.4.0)
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check public values are set
+        run: |
+          for v in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY NEXT_PUBLIC_TURNSTILE_SITE_KEY NEXT_PUBLIC_SITE_URL; do
+            [ -n "${!v}" ] || { echo "Missing GitHub variable: $v"; exit 1; }
+          done
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      - name: Next build + OpenNext Worker build (LIVE data mode)
+        run: pnpm cf:build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      - name: Worker size check (live build)
+        run: pnpm cf:check
+      - name: Deploy to staging
+        run: pnpm exec opennextjs-cloudflare deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -60,7 +60,9 @@ jobs:
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
       - name: Next build + OpenNext Worker build (LIVE data mode)
-        run: pnpm cf:build
+        # TEMPORARY, STAGING ONLY: Next 15 left the Next.js support window in Oct 2026, so OpenNext refuses it.
+        # Upgrade Next before the production go-live and remove this flag. Never copy it to a production deploy.
+        run: pnpm cf:build --dangerouslyUseUnsupportedNextVersion
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
